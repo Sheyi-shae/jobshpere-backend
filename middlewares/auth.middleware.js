@@ -41,7 +41,7 @@ export const authenticateUser = async (req, res, next) => {
       },
     });
     
-    console.log("logged in",user)
+    
 
     if (!user) {
       return res.status(401).json({ error: "User not found." });
