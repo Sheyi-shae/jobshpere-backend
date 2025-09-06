@@ -28,7 +28,7 @@ const prisma = new PrismaClient();
 const app = express();
 // Middleware
 
-const allowedOrigins = ['http://localhost:3000','https://jobshpere-frontend-dse6.vercel.app'];
+const allowedOrigins = ['https://jobshpere-frontend-dse6.vercel.app'];
 
 app.use(
   cors({
