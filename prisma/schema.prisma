@@ -1,0 +1,146 @@
+
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+model Company {
+  id            String       @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  description   String?
+  website       String?
+  slug          String       @unique
+  logo          String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+   subscriptionStatus  String? @default("inactive") // active, inactive, 
+  stripeCustomerId    String?  @unique
+  stripeSubscriptionId String? 
+  subscriptionEndDate     DateTime?
+
+  users         User[]
+  jobPosts      JobPost[]
+  applications  Application[]
+  activity      Activity[]
+}
+
+model User {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  email      String   @unique
+  password   String
+  role       Role  
+  createdAt  DateTime @default(now())
+
+  companyId  String    @db.ObjectId
+  company    Company  @relation(fields: [companyId], references: [id])
+  jobPosts   JobPost[]
+}
+
+model JobPost {
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  slug        String     @unique
+  description String
+  location    String
+  type        JobType
+  tags        String[]
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  salaryMin    Int?
+  salaryMax    Int?
+
+  userId      String     @db.ObjectId
+  user        User       @relation(fields: [userId], references: [id])
+  companyId   String     @db.ObjectId
+  company     Company    @relation(fields: [companyId], references: [id])
+  applications Application[]
+  jobViews    JobView[]
+  activity  Activity[]
+}
+
+model Application {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  fullName   String
+  email      String
+  resumeUrl  String
+  message    String?
+  coverLetter String?
+  phone      String?
+  aiScore    Int?
+  aiExplanation String?
+  status     String   @default("applied") // applied, shortlisted, screened_out
+  isAnalyzed Boolean @default(false)
+  updatedAt  DateTime @updatedAt
+  createdAt  DateTime @default(now())
+
+  jobId      String   @db.ObjectId
+  job        JobPost  @relation(fields: [jobId], references: [id])
+
+  companyId  String    @db.ObjectId
+  company    Company  @relation(fields: [companyId], references: [id])
+  activity   Activity[]
+
+  //jobid, email and resumeUrl should be unique together
+  @@unique([jobId, email, resumeUrl])
+}
+
+model Activity {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  type        ActivityType
+  
+  user        String?
+  action      String?
+  createdAt   DateTime @default(now())
+  updatedAt  DateTime @default(now())
+
+  companyId   String   @db.ObjectId
+  company     Company  @relation(fields: [companyId], references: [id])
+
+  // Optional relations
+  jobId       String?  @db.ObjectId
+  job         JobPost? @relation(fields: [jobId], references: [id])
+
+  applicationId String? @db.ObjectId
+  application   Application? @relation(fields: [applicationId], references: [id])
+}
+
+
+model JobView {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  jobId     String   @db.ObjectId
+  job       JobPost  @relation(fields: [jobId], references: [id])
+  ip        String
+  createdAt DateTime @default(now())
+
+  @@unique([jobId, ip]) 
+}
+
+enum Role {
+  admin
+  recruiter
+}
+
+enum JobType {
+  remote
+  onsite
+  hybrid
+  contract
+  internship
+}
+enum ActivityType {
+  JOB_POSTED
+  JOB_UPDATED
+  CREATED_NEW_USER
+  APPLIED
+  SHORTLISTED
+  SCREENED_OUT
+  PAYMENT
+  
+}
+
