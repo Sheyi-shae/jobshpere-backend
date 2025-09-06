@@ -89,7 +89,7 @@ const { password: _, ...userWithoutPassword } = user;
       success: true,
       message: 'Registration successful',
       user:userWithoutPassword,
-      slug:user.company.slug
+      slug:company.slug
     });
   } catch (error) {
     
