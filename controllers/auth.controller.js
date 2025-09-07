@@ -70,7 +70,14 @@ export default async function companyAndUserAuth(req,res,next) {
                 role: 'admin', 
                 companyId: company.id,
             }
+            ,
             });
+
+              // Fetch user with company details
+    const userWithCompany = await db.user.findUnique({
+      where: { id: user.id },
+      include: { company: true },
+    });
        //Generate token
     const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
@@ -83,13 +90,14 @@ export default async function companyAndUserAuth(req,res,next) {
 });
 
 
-    // Exclude password before sending
-const { password: _, ...userWithoutPassword } = user;
+    
+    // Exclude password
+    const { password: _, ...userWithoutPassword } = userWithCompany;
     return res.status(201).json({
       success: true,
       message: 'Registration successful',
       user:userWithoutPassword,
-      slug:company.slug
+      slug:userWithCompany.company.slug
     });
   } catch (error) {
     

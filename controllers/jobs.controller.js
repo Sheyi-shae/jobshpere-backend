@@ -290,7 +290,16 @@ export async function fetchPublicJobs(req, res, next) {
     const jobs = await db.jobPost.findMany({
       where,
       include: {
-        user: true,
+        user: {
+            select: {
+                id:true,
+                email: true,
+                role :true,
+                  createdAt:true, 
+                  companyId :true
+ 
+            }
+        },
         company: true,
         jobViews: true,
         applications: true
